@@ -1,0 +1,86 @@
+/* Estilos base del dashboard
+   Paleta pensada para ser legible para personas con daltonismo:
+   evita combinaciones rojo/verde como única diferenciación. */
+
+:root {
+  --color-bg: #FAFAFA;
+  --color-text: #1F2933;
+  --color-primary: #185FA5;   /* azul */
+  --color-secondary: #E08A1E; /* naranja/ámbar */
+  --color-accent: #5E548E;    /* morado */
+  --color-border: #D9DEE4;
+}
+
+* {
+  box-sizing: border-box;
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+}
+
+.page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.logo {
+  height: 64px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 1.6rem;
+}
+
+.subtitle {
+  margin: 0.25rem 0 0;
+  color: #52606D;
+  font-size: 0.95rem;
+}
+
+.intro {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.data-source {
+  font-size: 0.85rem;
+  color: #52606D;
+}
+
+.tabs {
+  margin-bottom: 1rem;
+}
+
+.tab-content {
+  background: #fff;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.footer {
+  text-align: center;
+  font-size: 0.8rem;
+  color: #9AA5B1;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+}

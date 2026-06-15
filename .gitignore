@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Datos generados localmente (mantener solo lo necesario en data/processed)
+*.tmp
+
+# Editor / OS
+.vscode/
+.DS_Store
