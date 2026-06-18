@@ -3,8 +3,9 @@
    evita combinaciones rojo/verde como única diferenciación. */
 
 :root {
-  --color-bg: #FAFAFA;
-  --color-text: #1F2933;
+  --color-bg: #1A1D21;       /* gris muy oscuro, no negro puro */
+  --color-text: #E8EAED;     /* texto claro, legible sobre fondo oscuro */
+  --color-border: #2E3338;   /* bordes sutiles visibles en oscuro */
   --color-primary: #185FA5;   /* azul */
   --color-secondary: #E08A1E; /* naranja/ámbar */
   --color-accent: #5E548E;    /* morado */
