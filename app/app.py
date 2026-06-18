@@ -17,7 +17,7 @@ app.layout = html.Div(className="page", children=[
 
     # Encabezado
     html.Div(className="header", children=[
-        html.Img(src="/assets/logo_uaysen.png", className="logo"),
+        html.Img(src="/assets/logo.png", className="logo"),
         html.Div(children=[
             html.H1("Conectividad y Demografía en la Región de Aysén"),
             html.P(
