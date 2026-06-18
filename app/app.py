@@ -10,6 +10,7 @@ from charts import conectividad, poblacion, cruce, mapa
 
 
 app = dash.Dash(__name__, title="Conectividad y Demografía - Aysén")
+server = app.server  # necesario para gunicorn/Render
 
 
 app.layout = html.Div(className="page", children=[
@@ -65,4 +66,6 @@ app.layout = html.Div(className="page", children=[
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 8050))
+    app.run(host="0.0.0.0", port=port, debug=False)
