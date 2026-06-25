@@ -1,12 +1,7 @@
 """
 charts/conectividad.py
 Gráfico: evolución de conexiones de internet fija residencial por comuna.
-Responsable: [completar nombre]
 
-Entregable:
-    - Gráfico de líneas con la evolución anual de conexiones residenciales
-      (diciembre de cada año, 2015-2025), una línea por comuna.
-    - Interacción: Dropdown multi-selección para filtrar comunas.
 """
 
 import plotly.express as px

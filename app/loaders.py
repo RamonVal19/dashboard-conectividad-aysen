@@ -50,6 +50,8 @@ def load_conectividad_aysen(path: str = None) -> pd.DataFrame:
     df_largo["conexiones"] = pd.to_numeric(df_largo["conexiones"], errors="coerce")
     df_largo = df_largo.drop(columns="periodo")
 
+    df_largo['comuna'] = df_largo['comuna'].replace({'Aisén': 'Aysén'})
+
     return df_largo[["comuna", "anio", "mes", "conexiones"]]
 
 
@@ -127,7 +129,7 @@ def build_cruce_dataset() -> pd.DataFrame:
         .rename(columns={"conexiones": "conexiones_totales"})
     )
 
-    # Agregar población: sumar todas las comunas por año
+    # Agregar población: Sumar todas las comunas por año
     df_pob_anual = (
         df_pob
         .groupby("anio")["poblacion"]
