@@ -10,7 +10,7 @@ from charts import conectividad, poblacion, cruce, mapa
 
 
 app = dash.Dash(__name__, title="Conectividad y Demografía - Aysén")
-server = app.server  # necesario para gunicorn/Render
+server = app.server  # expone el servidor Flask para gunicorn/Render
 
 
 app.layout = html.Div(className="page", children=[
@@ -21,9 +21,8 @@ app.layout = html.Div(className="page", children=[
         html.Div(children=[
             html.H1("Conectividad y Demografía en la Región de Aysén"),
             html.P(
-                "Cómo evolucionó el acceso a internet fijo frente al "
-                "crecimiento poblacional en las 10 comunas de la región "
-                "(2007-2026, con proyecciones hasta 2035).",
+                "Cómo evolucionó el acceso a internet fijo residencial frente al "
+                "crecimiento poblacional en las 10 comunas de la región (2015–2025).",
                 className="subtitle"
             ),
         ]),
@@ -32,10 +31,11 @@ app.layout = html.Div(className="page", children=[
     # Texto introductorio / narrativa
     html.Div(className="intro", children=[
         html.P(
-            "Este dashboard permite explorar la relación entre el "
-            "crecimiento de las conexiones de internet fijo y la "
-            "evolución demográfica comunal. Use los filtros en cada "
-            "sección para comparar comunas y períodos."
+            "Este dashboard permite explorar la relación entre el crecimiento "
+            "de las conexiones de internet fijo residencial y la evolución "
+            "demográfica comunal. La pestaña de Población incluye proyecciones "
+            "del INE hasta 2035. Use los filtros en cada sección para comparar "
+            "comunas y períodos."
         ),
         html.P(className="data-source", children=[
             "Fuentes de datos: ",
@@ -67,5 +67,5 @@ app.layout = html.Div(className="page", children=[
 
 if __name__ == "__main__":
     import os
-    port = int(os.environ.get("PORT", 8050))
+    port = int(os.environ.get("PORT", 8050)) # Render asigna el puerto via variable de entorno
     app.run(host="0.0.0.0", port=port, debug=False)

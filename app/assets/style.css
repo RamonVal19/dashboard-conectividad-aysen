@@ -1,33 +1,39 @@
-/* Estilos base del dashboard
-   Paleta pensada para ser legible para personas con daltonismo:
-   evita combinaciones rojo/verde como única diferenciación. */
+/* ============================================================
+   Estilos base del dashboard
+   Paleta accesible para personas con daltonismo: Evita combinaciones rojo/verde como única diferenciación.
+   ============================================================ */
 
+/* ── Variables globales de color y tipografía ── */
 :root {
-  --color-bg: #FAFAFA;
-  --color-text: #1F2933;
-  --color-primary: #185FA5;   /* azul */
-  --color-secondary: #E08A1E; /* naranja/ámbar */
-  --color-accent: #5E548E;    /* morado */
-  --color-border: #D9DEE4;
+  --color-bg: #FAFAFA;          /* Fondo general de la página */
+  --color-text: #1F2933;        /* Texto principal */
+  --color-primary: #185FA5;     /* Azul — color de énfasis principal */
+  --color-secondary: #E08A1E;   /* Naranja/ámbar — color secundario */
+  --color-accent: #5E548E;      /* Morado — color de acento */
+  --color-border: #D9DEE4;      /* Bordes de paneles y separadores */
 }
 
+/* ── Tipografía consistente en todos los elementos ── */
 * {
   box-sizing: border-box;
   font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+/* ── Fondo y color de texto base ── */
 body {
   margin: 0;
   background-color: var(--color-bg);
   color: var(--color-text);
 }
 
+/* ── Contenedor principal: Limita el ancho y centra el contenido ── */
 .page {
   max-width: 1100px;
   margin: 0 auto;
   padding: 1.5rem;
 }
 
+/* ── Encabezado: Logo y título alineados horizontalmente ── */
 .header {
   display: flex;
   align-items: center;
@@ -35,21 +41,25 @@ body {
   margin-bottom: 1rem;
 }
 
+/* ── Logo de la Universidad ── */
 .logo {
-  height: 64px;
+  height: 80px;
 }
 
+/* ── Título principal ── */
 .header h1 {
   margin: 0;
   font-size: 1.6rem;
 }
 
+/* ── Subtítulo descriptivo bajo el título ── */
 .subtitle {
   margin: 0.25rem 0 0;
   color: #52606D;
   font-size: 0.95rem;
 }
 
+/* ── Panel de introducción y fuentes de datos ── */
 .intro {
   background: #fff;
   border: 1px solid var(--color-border);
@@ -60,15 +70,18 @@ body {
   line-height: 1.5;
 }
 
+/* ── Texto de cita de fuentes dentro del panel intro ── */
 .data-source {
   font-size: 0.85rem;
   color: #52606D;
 }
 
+/* ── Contenedor de pestañas ── */
 .tabs {
   margin-bottom: 1rem;
 }
 
+/* ── Contenido de cada pestaña ── */
 .tab-content {
   background: #fff;
   border: 1px solid var(--color-border);
@@ -76,6 +89,7 @@ body {
   padding: 1.25rem;
 }
 
+/* ── Pie de página ── */
 .footer {
   text-align: center;
   font-size: 0.8rem;

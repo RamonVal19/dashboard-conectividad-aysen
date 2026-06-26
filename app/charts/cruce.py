@@ -1,6 +1,7 @@
 """
 charts/cruce.py
-Gráfico de cruce: conexiones de internet vs. población regional por año.
+Gráfico de cruce: Conexiones de internet vs. población regional por año.
+Responsable: Alan Caro
 """
 
 import plotly.graph_objects as go
@@ -14,15 +15,15 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 import loaders
 
 # ---------------------------------------------------------------------------
-# Carga de datos
+# Carga del dataset combinado (se ejecuta una vez al iniciar la app)
+# build_cruce_dataset() hace el merge entre SUBTEL e INE por año
+# y calcula conexiones per cápita como variable derivada.
 # ---------------------------------------------------------------------------
-
 df = loaders.build_cruce_dataset()
 
 # ---------------------------------------------------------------------------
 # Layout
 # ---------------------------------------------------------------------------
-
 layout = html.Div(className="tab-content", children=[
 
     html.H2("Conectividad vs. Población — Región de Aysén"),
@@ -33,7 +34,7 @@ layout = html.Div(className="tab-content", children=[
         "conectividad avanza más rápido que la población."
     ),
 
-    # Selector de métrica
+    # RadioItems: Permite cambiar entre vista de totales y vista per cápita
     html.Label("Seleccionar métrica:"),
     dcc.RadioItems(
         id="metrica-cruce",
@@ -43,37 +44,43 @@ layout = html.Div(className="tab-content", children=[
         ],
         value="total",
         inline=True,
-        style={"marginBottom": "1.5rem", "color": "#E8EAED"}
+        style={"marginBottom": "1.5rem"}
     ),
 
     dcc.Graph(id="grafico-cruce"),
 
-    # Tarjetas con métricas clave
+    # Tarjetas con métricas clave generadas dinámicamente por el callback
     html.Div(id="tarjetas-cruce", style={
         "display": "flex", "gap": "1rem", "marginTop": "1rem", "flexWrap": "wrap"
     }),
 
     html.P(
-        "Fuentes: SUBTEL (conexiones fijas residenciales, diciembre de cada año) "
-        "e INE (proyecciones de población comunal 2002–2035). "
-        "Años en común: 2015–2025.",
+        "Fuentes: SUBTEL – Series de Conexiones de Internet Fija Residencial "
+        "(datos reales, diciembre de cada año, 2015–2025) e INE – Estimaciones "
+        "y Proyecciones de Población Comunal 2002–2035, base Censo 2017. "
+        "La población 2018–2025 corresponde a proyecciones oficiales del INE, "
+        "que es la única fuente disponible para estimaciones comunales en ese período.",
         style={"fontSize": "0.85rem", "color": "#52606D", "marginTop": "1rem"}
     ),
 ])
 
 # ---------------------------------------------------------------------------
-# Callback
+# Estilo base compartido por ambos gráficos
+# Rejilla sutil (#ECEEF1) aplicando Ley de Weber: visible pero sin competir
+# con los datos. Sin líneas de eje para reducir ruido visual.
 # ---------------------------------------------------------------------------
-
 ESTILO_BASE = dict(
-    plot_bgcolor="#23262B",
-    paper_bgcolor="#23262B",
-    font=dict(color="#E8EAED"),
-    legend=dict(font=dict(color="#E8EAED")),
-    title_font=dict(color="#E8EAED"),
+    plot_bgcolor="white",
+    paper_bgcolor="white",
+    font=dict(color="#1F2933"),
+    legend=dict(font=dict(color="#1F2933")),
+    title_font=dict(color="#1F2933"),
     hovermode="x unified",
 )
 
+# ---------------------------------------------------------------------------
+# Callback: Actualiza el gráfico y las tarjetas según la métrica seleccionada
+# ---------------------------------------------------------------------------
 @callback(
     Output("grafico-cruce", "figure"),
     Output("tarjetas-cruce", "children"),
@@ -82,7 +89,7 @@ ESTILO_BASE = dict(
 def actualizar_cruce(metrica):
 
     if metrica == "per_capita":
-        # Gráfico simple de línea: conexiones cada 100 hab
+        # Vista per cápita: Línea simple de conexiones cada 100 habitantes
         fig = px.line(
             df,
             x="anio",
@@ -98,11 +105,10 @@ def actualizar_cruce(metrica):
         fig.update_traces(line=dict(width=3))
         fig.update_layout(
             **ESTILO_BASE,
-            xaxis=dict(gridcolor="#2E3338", color="#E8EAED", dtick=1),
-            yaxis=dict(gridcolor="#2E3338", color="#E8EAED"),
+            xaxis=dict(gridcolor="#ECEEF1", color="#1F2933", dtick=2, showline=False),
+            yaxis=dict(gridcolor="#ECEEF1", color="#1F2933", showline=False),
         )
 
-        # Calcular variación
         inicio = df["conexiones_per_capita"].iloc[0]
         fin = df["conexiones_per_capita"].iloc[-1]
         variacion = fin - inicio
@@ -114,9 +120,11 @@ def actualizar_cruce(metrica):
         ])
 
     else:
-        # Gráfico de doble eje: conexiones + población
+        # Conexiones en eje izquierdo y población en eje derecho
+        # Se usa doble eje porque ambas variables tienen escalas muy distintas
         fig = make_subplots(specs=[[{"secondary_y": True}]])
 
+        # Línea azul para conexiones (SUBTEL)
         fig.add_trace(
             go.Scatter(
                 x=df["anio"], y=df["conexiones_totales"],
@@ -128,6 +136,8 @@ def actualizar_cruce(metrica):
             secondary_y=False,
         )
 
+        # Línea punteada naranja para Población (INE)
+        # Azul y naranja son distinguibles para personas con daltonismo
         fig.add_trace(
             go.Scatter(
                 x=df["anio"], y=df["poblacion_total"],
@@ -142,16 +152,16 @@ def actualizar_cruce(metrica):
         fig.update_layout(
             title="Conexiones de internet vs. Población total — Región de Aysén",
             **ESTILO_BASE,
-            xaxis=dict(gridcolor="#2E3338", color="#E8EAED", dtick=1, title="Año"),
+            xaxis=dict(gridcolor="#ECEEF1", color="#1F2933", dtick=2, showline=False, title="Año"),
         )
         fig.update_yaxes(
             title_text="Conexiones residenciales",
-            gridcolor="#2E3338", color="#E8EAED",
+            gridcolor="#ECEEF1", color="#1F2933",
             secondary_y=False,
         )
         fig.update_yaxes(
             title_text="Población total",
-            gridcolor="#2E3338", color="#E8EAED",
+            gridcolor="#ECEEF1", color="#1F2933",
             secondary_y=True,
         )
 
@@ -169,21 +179,21 @@ def actualizar_cruce(metrica):
 
 
 def _tarjetas(datos):
-    """Genera tarjetas HTML con métricas clave."""
+    """Genera tarjetas HTML con métricas clave debajo del gráfico."""
     tarjetas = []
     for titulo, valor in datos:
         tarjetas.append(
             html.Div(
                 style={
-                    "background": "#2E3338",
+                    "background": "#F3F4F6",
                     "borderRadius": "8px",
                     "padding": "1rem 1.5rem",
                     "minWidth": "180px",
                     "flex": "1",
                 },
                 children=[
-                    html.P(titulo, style={"color": "#9AA5B4", "fontSize": "0.8rem", "margin": "0"}),
-                    html.P(valor, style={"color": "#E8EAED", "fontSize": "1.4rem", "fontWeight": "bold", "margin": "0.3rem 0 0 0"}),
+                    html.P(titulo, style={"color": "#52606D", "fontSize": "0.8rem", "margin": "0"}),
+                    html.P(valor, style={"color": "#1F2933", "fontSize": "1.4rem", "fontWeight": "bold", "margin": "0.3rem 0 0 0"}),
                 ]
             )
         )

@@ -1,7 +1,7 @@
 """
 charts/conectividad.py
 Gráfico: evolución de conexiones de internet fija residencial por comuna.
-
+Responsable: Ramón Valenzuela
 """
 
 import plotly.express as px
@@ -14,9 +14,8 @@ import loaders
 
 # ---------------------------------------------------------------------------
 # Carga y preparación de datos (se ejecuta una vez al iniciar la app)
+# Se usa diciembre de cada año como valor representativo de la serie anual, lo que reduce 12 puntos mensuales a 1 punto por año por comuna.
 # ---------------------------------------------------------------------------
-
-# Cargar datos y filtrar solo diciembres para la serie anual (2015-2025)
 df = loaders.load_conectividad_aysen()
 df_dic = df[df['mes'] == 'Dic'].copy()
 
@@ -25,7 +24,6 @@ COMUNAS = sorted(df_dic['comuna'].unique().tolist())
 # ---------------------------------------------------------------------------
 # Layout
 # ---------------------------------------------------------------------------
-
 layout = html.Div(className="tab-content", children=[
 
     html.H2("Evolución de la Conectividad (Internet Fijo Residencial)"),
@@ -36,7 +34,7 @@ layout = html.Div(className="tab-content", children=[
         "Fuente: SUBTEL – Series de Conexiones de Internet Fija."
     ),
 
-    # Dropdown multi-selección de comunas
+    # Dropdown multi-selección: Permite comparar una o más comunas simultáneamente
     html.Label("Seleccionar comunas:"),
     dcc.Dropdown(
         id="selector-comunas-conectividad",
@@ -47,10 +45,9 @@ layout = html.Div(className="tab-content", children=[
         style={"marginBottom": "1rem"}
     ),
 
-    # Gráfico de líneas
     dcc.Graph(id="grafico-conectividad"),
 
-    # Nota sobre valores nulos
+    # O'Higgins y Tortel tienen NaN antes de 2022 (No existe registro de datos SUBTEL en ese período)
     html.P(
         "Nota: O'Higgins y Tortel no registran datos antes de 2022, "
         "lo que refleja su aislamiento geográfico extremo.",
@@ -59,19 +56,17 @@ layout = html.Div(className="tab-content", children=[
 ])
 
 # ---------------------------------------------------------------------------
-# Callback
+# Callback: actualiza el gráfico según las comunas seleccionadas
 # ---------------------------------------------------------------------------
-
 @callback(
     Output("grafico-conectividad", "figure"),
     Input("selector-comunas-conectividad", "value")
 )
 def actualizar_grafico(comunas_seleccionadas):
-    # Si no hay ninguna comuna seleccionada, mostrar mensaje vacío
     if not comunas_seleccionadas:
         return px.line(title="Selecciona al menos una comuna para visualizar los datos.")
 
-    # Filtrar DataFrame según comunas seleccionadas usando query
+    # Filtrar por comunas seleccionadas usando query
     df_filtrado = df_dic.query("comuna in @comunas_seleccionadas")
 
     fig = px.line(
@@ -86,19 +81,19 @@ def actualizar_grafico(comunas_seleccionadas):
             "conexiones": "Conexiones residenciales",
             "comuna": "Comuna"
         },
-        color_discrete_sequence=px.colors.qualitative.Safe  # paleta apta para daltonismo
+        color_discrete_sequence=px.colors.qualitative.Safe  # Paleta apta para daltonismo
     )
 
     fig.update_layout(
-        xaxis=dict(dtick=1, gridcolor="#2E3338", color="#E8EAED"),
-        yaxis=dict(gridcolor="#2E3338", color="#E8EAED"),
+        xaxis=dict(dtick=2, gridcolor="#ECEEF1", color="#1F2933", showline=False),
+        yaxis=dict(gridcolor="#ECEEF1", color="#1F2933", showline=False),
         legend_title_text="Comuna",
-        legend=dict(font=dict(color="#E8EAED")),
-        plot_bgcolor="#23262B",
-        paper_bgcolor="#23262B",
-        font=dict(color="#E8EAED"),
-        hovermode="x unified",
-        title_font=dict(color="#E8EAED")
+        legend=dict(font=dict(color="#1F2933"), bgcolor="rgba(0,0,0,0)"),
+        plot_bgcolor="white",
+        paper_bgcolor="white",
+        font=dict(color="#1F2933"),
+        hovermode="x unified",   # Tooltip unificado al pasar el cursor
+        title_font=dict(color="#1F2933")
     )
 
     return fig

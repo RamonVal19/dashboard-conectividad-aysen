@@ -14,8 +14,19 @@ RAW_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "data", "raw"
 # ---------------------------------------------------------------------------
 def load_conectividad_aysen(path: str = None) -> pd.DataFrame:
     """
-    Lee la hoja de SUBTEL con conexiones fijas residenciales por comuna.
-    Devuelve DataFrame con columnas: comuna | anio | mes | conexiones
+    Lee la hoja '7.11.1.CO_FIJAS_RES_COMUNA' del archivo de internet fija
+    de SUBTEL, filtra las 10 comunas de la Región de Aysén y devuelve un
+    DataFrame en formato largo (tidy):
+
+        comuna | anio | mes | conexiones
+
+    Se usa la hoja residencial (no el total) porque el total incluye
+    conexiones empresariales e institucionales que distorsionan la
+    comparación con datos de población.
+
+    Nota: La hoja contiene dos tablas dentro del mismo archivo, una al
+    lado de la otra (2015-2018 y 2019-2026), con distintas posiciones
+    de filas y columnas. Se extraen por separado y se unen con pd.concat.
     """
     if path is None:
         path = os.path.join(RAW_DIR, "subtel_internet_fija.xlsx")

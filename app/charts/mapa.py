@@ -1,6 +1,7 @@
 """
 charts/mapa.py
 Mapa coroplético de la Región de Aysén.
+Responsable: Ramón Valenzuela
 """
 
 import json
@@ -32,12 +33,12 @@ NOMBRES_COMUNAS = {
 }
 
 # ---------------------------------------------------------------------------
-# Rutas de archivos pre-procesados (más livianos que el shapefile y Excel
+# Rutas de archivos pre-procesados (Son más livianos que el shapefile y Excel
 # originales, lo que reduce el consumo de RAM en producción)
 # ---------------------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 GEOJSON_PATH = os.path.join(BASE_DIR, "data", "processed", "aysen_comunas.geojson")
-POB_PATH = os.path.join(BASE_DIR, "data", "processed", "poblacion_aysen_2024.csv")
+POB_PATH = os.path.join(BASE_DIR, "data", "processed", "poblacion_aysen_2017.csv")
 
 # ---------------------------------------------------------------------------
 # Carga del GeoJSON pre-procesado y asignación de nombres correctos por CUT
@@ -52,8 +53,7 @@ df_pob = pd.read_csv(POB_PATH)
 
 # ---------------------------------------------------------------------------
 # Conexiones residenciales diciembre 2025 (SUBTEL)
-# Se invierte el diccionario NOMBRES_COMUNAS para obtener el CUT desde el
-# nombre de comuna, y así hacer el join con el shapefile por CUT.
+# Se invierte el diccionario NOMBRES_COMUNAS para obtener el CUT desde el nombre de comuna, y así hacer el join con el shapefile por CUT.
 # ---------------------------------------------------------------------------
 CUT_POR_NOMBRE = {v: k for k, v in NOMBRES_COMUNAS.items()}
 df_con = loaders.load_conectividad_aysen()
@@ -61,7 +61,6 @@ df_con_2025 = df_con.query('anio == 2025 and mes == "Dic"')[["comuna", "conexion
 df_con_2025["CUT"] = df_con_2025["comuna"].map(CUT_POR_NOMBRE)
 
 # ---------------------------------------------------------------------------
-# Join shapefile + población + conexiones, todo por CUT
 # Se calcula además conexiones per cápita como variable derivada.
 # ---------------------------------------------------------------------------
 gdf_merged = gdf.merge(df_pob, on="CUT", how="left")
@@ -70,17 +69,18 @@ gdf_merged["conexiones_per_capita"] = (
     (gdf_merged["conexiones"] / gdf_merged["poblacion"] * 100).round(2)
 )
 
+# Centro geográfico de la región para centrar el mapa al cargar
 CENTRO_LAT = gdf_merged.geometry.centroid.y.mean()
 CENTRO_LON = gdf_merged.geometry.centroid.x.mean()
 
 # ---------------------------------------------------------------------------
-# Configuración de las tres variables disponibles en el selector
-# Cada una tiene su propio título, escala de color y etiqueta.
+# Variables disponibles en el selector
+# Escalas secuenciales de un solo color ya que son seguras para personas con daltonismo porque solo varían en luminosidad, no en matiz.
 # ---------------------------------------------------------------------------
 VARIABLES = {
     "poblacion": {
-        "label": "Población (2024)",
-        "titulo": "Población por comuna — Región de Aysén (2024)",
+        "label": "Población (2017)",
+        "titulo": "Población por comuna — Región de Aysén (2017)",
         "escala": "Blues",
     },
     "conexiones": {
@@ -108,6 +108,7 @@ layout = html.Div(className="tab-content", children=[
         "cambiar lo que muestra el mapa."
     ),
 
+    # RadioItems: selector de variable a visualizar en el mapa
     html.Label("Variable a visualizar:"),
     dcc.RadioItems(
         id="selector-variable-mapa",

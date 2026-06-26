@@ -1,6 +1,7 @@
 """
 charts/poblacion.py
 Gráfico: evolución de población por comuna (INE proyecciones 2002-2035).
+Responsable: Alan Caro
 """
 
 import plotly.express as px
@@ -13,6 +14,8 @@ import loaders
 
 # ---------------------------------------------------------------------------
 # Carga de datos (se ejecuta una vez al iniciar la app)
+# load_poblacion_aysen() devuelve el rango completo 2002-2035 para mostrar
+# tanto estimaciones históricas como proyecciones futuras.
 # ---------------------------------------------------------------------------
 
 df = loaders.load_poblacion_aysen()
@@ -32,10 +35,13 @@ layout = html.Div(className="tab-content", children=[
     html.H2("Evolución Poblacional por Comuna (2002–2035)"),
 
     html.P(
-        "Estimaciones y proyecciones de población del INE para las 10 comunas "
-        "de la Región de Aysén. Los datos hasta 2017 son estimaciones basadas "
-        "en el Censo; desde 2018 en adelante son proyecciones."
-    ),
+    "Estimaciones y proyecciones de población del INE para las 10 comunas "
+    "de la Región de Aysén (2002–2035). Los datos hasta 2017 corresponden "
+    "a estimaciones ajustadas basadas en el Censo 2017, que corrigen "
+    "omisiones y subregistros propios del proceso censal, por este motivo "
+    "pueden diferir levemente del conteo censal bruto. Desde 2018 en "
+    "adelante son proyecciones calculadas por el INE."
+),
 
     # Selector de comunas
     html.Label("Seleccionar comunas:"),
@@ -48,18 +54,6 @@ layout = html.Div(className="tab-content", children=[
         style={"marginBottom": "1rem"}
     ),
 
-    # Selector del tipo de gráfico
-    html.Label("Tipo de visualización:"),
-    dcc.RadioItems(
-        id="tipo-grafico-poblacion",
-        options=[
-            {"label": " Líneas (evolución en el tiempo)", "value": "linea"},
-            {"label": " Barras (comparación por año)", "value": "barras"},
-        ],
-        value="linea",
-        inline=True,
-        style={"marginBottom": "1rem", "color": "#E8EAED"}
-    ),
 
     # Slider de rango de años
     html.Label("Rango de años:"),
@@ -78,8 +72,9 @@ layout = html.Div(className="tab-content", children=[
 
     # Nota
     html.P(
-        "Nota: Las líneas punteadas indican proyecciones (2018–2035). "
-        "Fuente: INE – Estimaciones y Proyecciones de Población 2002-2035, base Censo 2017.",
+        "La línea punteada vertical separa estimaciones (hasta 2017) de "
+        "proyecciones (desde 2018). Fuente: INE – Estimaciones y Proyecciones "
+        "de Población 2002–2035, base Censo 2017.",
         style={"fontSize": "0.85rem", "color": "#52606D", "marginTop": "0.5rem"}
     ),
 ])
@@ -91,10 +86,9 @@ layout = html.Div(className="tab-content", children=[
 @callback(
     Output("grafico-poblacion", "figure"),
     Input("selector-comunas-poblacion", "value"),
-    Input("tipo-grafico-poblacion", "value"),
     Input("rango-anios-poblacion", "value"),
 )
-def actualizar_grafico(comunas_sel, tipo, rango_anios):
+def actualizar_grafico(comunas_sel, rango_anios):
     if not comunas_sel:
         return px.line(title="Selecciona al menos una comuna.")
 
@@ -110,55 +104,41 @@ def actualizar_grafico(comunas_sel, tipo, rango_anios):
         lambda a: "Proyección" if a >= 2018 else "Estimación"
     )
 
+    # Estilo del gráfico
     ESTILO = dict(
-        plot_bgcolor="#23262B",
-        paper_bgcolor="#23262B",
-        font=dict(color="#E8EAED"),
-        legend=dict(font=dict(color="#E8EAED")),
-        xaxis=dict(gridcolor="#2E3338", color="#E8EAED", dtick=5),
-        yaxis=dict(gridcolor="#2E3338", color="#E8EAED"),
-        title_font=dict(color="#E8EAED"),
-        hovermode="x unified",
+    plot_bgcolor="white",
+    paper_bgcolor="white",
+    font=dict(color="#1F2933"),
+    legend=dict(font=dict(color="#1F2933"), bgcolor="rgba(0,0,0,0)"),
+    xaxis=dict(gridcolor="#ECEEF1", color="#1F2933", dtick=5, showline=False),
+    yaxis=dict(gridcolor="#ECEEF1", color="#1F2933", showline=False),
+    title_font=dict(color="#1F2933"),
+    hovermode="x unified",
     )
 
-    if tipo == "linea":
-        fig = px.line(
-            df_filtrado,
-            x="anio",
-            y="poblacion",
-            color="comuna",
-            line_dash="tipo_dato",
-            markers=True,
-            title="Evolución poblacional — Región de Aysén",
-            labels={
-                "anio": "Año",
-                "poblacion": "Población",
-                "comuna": "Comuna",
-                "tipo_dato": "Tipo de dato"
-            },
-            color_discrete_sequence=px.colors.qualitative.Safe,
-        )
-        # Línea vertical que separa estimaciones de proyecciones
-        fig.add_vline(
-            x=2017.5, line_dash="dot", line_color="#888",
-            annotation_text="← Estimación | Proyección →",
-            annotation_font_color="#888"
-        )
-    else:
-        fig = px.bar(
-            df_filtrado,
-            x="anio",
-            y="poblacion",
-            color="comuna",
-            barmode="group",
-            title="Comparación poblacional por año — Región de Aysén",
-            labels={
-                "anio": "Año",
-                "poblacion": "Población",
-                "comuna": "Comuna"
-            },
-            color_discrete_sequence=px.colors.qualitative.Safe,
-        )
+
+    fig = px.line(
+    df_filtrado,
+    x="anio",
+    y="poblacion",
+    color="comuna",
+    line_dash="tipo_dato",
+    markers=True,
+    title="Evolución poblacional — Región de Aysén",
+    labels={
+        "anio": "Año",
+        "poblacion": "Población",
+        "comuna": "Comuna",
+        "tipo_dato": "Tipo de dato"
+    },
+    color_discrete_sequence=px.colors.qualitative.Safe,
+)
+    # Línea vertical que separa estimaciones de proyecciones
+    fig.add_vline(
+        x=2017.5, line_dash="dot", line_color="#888",
+        annotation_text="← Estimación | Proyección →",
+        annotation_font_color="#888"
+    )
 
     fig.update_layout(**ESTILO)
     return fig
