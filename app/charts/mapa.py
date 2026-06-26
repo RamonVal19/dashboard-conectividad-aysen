@@ -1,12 +1,6 @@
 """
 charts/mapa.py
 Mapa coroplético de la Región de Aysén.
-Responsable: [completar nombre]
-
-Entregable:
-    - Mapa coroplético (px.choropleth_mapbox) mostrando población,
-      conexiones o conexiones per cápita por comuna.
-    - Interacción: RadioItems para seleccionar la variable a visualizar.
 """
 
 import json
@@ -38,36 +32,23 @@ NOMBRES_COMUNAS = {
 }
 
 # ---------------------------------------------------------------------------
-# Rutas de archivos
+# Rutas de archivos pre-procesados (más livianos que el shapefile y Excel
+# originales, lo que reduce el consumo de RAM en producción)
 # ---------------------------------------------------------------------------
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
-SHP_PATH = os.path.join(BASE_DIR, "data", "raw", "SHP_R11", "Comunal.shp")
-INE_PATH = os.path.join(BASE_DIR, "data", "raw", "ine_proyecciones_comunas.xlsx")
+GEOJSON_PATH = os.path.join(BASE_DIR, "data", "processed", "aysen_comunas.geojson")
+POB_PATH = os.path.join(BASE_DIR, "data", "processed", "poblacion_aysen_2024.csv")
 
 # ---------------------------------------------------------------------------
-# Carga y preparación del shapefile
-# Se reproyecta a WGS84 (EPSG:4326) porque Plotly lo requiere.
-# simplify() reduce el detalle de las geometrías para acelerar el renderizado.
+# Carga del GeoJSON pre-procesado y asignación de nombres correctos por CUT
 # ---------------------------------------------------------------------------
-gdf = gpd.read_file(SHP_PATH).to_crs(epsg=4326)
+gdf = gpd.read_file(GEOJSON_PATH)
 gdf["CUT"] = gdf["CUT"].astype(int)
 gdf["nombre_comuna"] = gdf["CUT"].map(NOMBRES_COMUNAS)
-gdf["geometry"] = gdf["geometry"].simplify(tolerance=0.001, preserve_topology=True)
 geojson = json.loads(gdf.to_json())
 
-# ---------------------------------------------------------------------------
-# Población 2024 por comuna (INE)
-# El archivo viene desagregado por sexo y edad, por eso se agrupa con groupby.
-# Join con el shapefile por CUT.
-# ---------------------------------------------------------------------------
-df_ine = pd.read_excel(INE_PATH, sheet_name="Est. y Proy. de Pob. Comunal")
-df_pob = (
-    df_ine.query("Region == 11")
-    .groupby("Comuna", as_index=False)["Poblacion 2024"]
-    .sum()
-    .rename(columns={"Poblacion 2024": "poblacion", "Comuna": "CUT"})
-)
-df_pob["CUT"] = df_pob["CUT"].astype(int)
+# Población desde CSV pre-procesado
+df_pob = pd.read_csv(POB_PATH)
 
 # ---------------------------------------------------------------------------
 # Conexiones residenciales diciembre 2025 (SUBTEL)
